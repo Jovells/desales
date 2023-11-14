@@ -16,7 +16,7 @@ contract DesalesNFT is ERC721URIStorage, Ownable {
 
     event minted(uint256 indexed tokenId, string tokenUri, address indexed owner);
 
-    constructor(address _auctionContract) ERC721("DesalesNFT", "DNFT") {
+    constructor(address _auctionContract) ERC721("DesalesNFT", "DNFT") Ownable(msg.sender)  {
         auctionContract = _auctionContract;
     }
 

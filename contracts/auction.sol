@@ -1,24 +1,21 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./nft.sol";
 
 contract Auction is Ownable {
-	using SafeMath for uint256;
 	address public dnftAddress;
 
-	DauctionNft private df;
 
 	function setDnftAddress(address _dnftAddress) external onlyOwner {
 		dnftAddress = _dnftAddress;
 	}
 
-    constructor(address _dnftAddress) {
+    constructor(address _dnftAddress) Ownable(msg.sender)  {
         dnftAddress = _dnftAddress;
     }
 
@@ -124,9 +121,9 @@ contract Auction is Ownable {
 
 		// require( IERC721(_tokenContract).isApprovedForAll(msg.sender, address(this)), "Contract not approved to transfer NFT");
 
-		df = DauctionNft(dnftAddress);
 
-		uint256 _tokenId = df.mint(tokenURI);
+
+		uint256 _tokenId = DesalesNFT(dnftAddress).mint(tokenURI);
 
 		auctions[++auctionCount] = AuctionInfo({
 			seller: msg.sender,
@@ -190,8 +187,8 @@ contract Auction is Ownable {
 		uint256 newEndtime = auction.endTime;
 		if (auction.preventSniping) {
 			//increase endTime if bid was placed in last 10 minutes
-			if (auction.endTime.sub(block.timestamp) < 600) {
-				newEndtime = auction.endTime = auction.endTime.add(600);
+			if (auction.endTime - block.timestamp < 600) {
+				newEndtime = auction.endTime = auction.endTime+ 600;
 			}
 		}
 
