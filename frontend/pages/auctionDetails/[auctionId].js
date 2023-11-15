@@ -81,58 +81,6 @@ function AuctionDetails() {
   }, [router.query.auctionId]);
 
   //read withdrawal and Bid EVents from The Graph
-  useEffect(() => {
-    if (router.query.auctionId) {
-      console.log('r', router.query.auctionId)
-      async function getAuctionEvents() {
-        const query = `{
-          claimeds(where: {auctionId: ${router.query.auctionId}}) {
-            id
-            auctionId
-            bidder
-            blockNumber
-            blockTimestamp
-            transactionHash
-            amount
-          }
-          withdrawals(where: {auctionId: ${router.query.auctionId}}) {
-            auctionId
-            bidder
-            blockNumber
-            blockTimestamp
-            transactionHash
-            amount
-          }
-          bidPlaceds(where: {auctionId: ${router.query.auctionId}}) {
-            auctionId
-            bidder
-            blockNumber
-            blockTimestamp
-            transactionHash
-            amount
-          }
-        }`;
-
-        const res = await fetch(GraphURL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({ query }),
-        }).catch((error) => console.log(error));
-
-        const data = await res?.json()
-        console.log('eventsFromgraph', data)
-        setEvents(data?.data)
-        return data
-
-      }
-
-      getAuctionEvents()
-    }
-  }, [router.query.auctionId])
-
 
 
   async function handleBid() {
@@ -153,7 +101,7 @@ function AuctionDetails() {
       toast.success("Approval Successful", { id: toastId });
     }
     const toastId = toast.loading("Placing Bid");
-      (await Auction.placeBid(router.query.auctionId, parsedBid, {gasLimit: 3e7})).wait().then((txnReceipt) => {
+      (await Auction.placeBid(router.query.auctionId, parsedBid, {gasLimit: 30000})).wait().then((txnReceipt) => {
         toast.success("Bid Placed Successfully", { id: toastId });
       })
 
@@ -371,13 +319,7 @@ function AuctionDetails() {
         <Grid width={1} md={11}>
           {/* <a href='https://mumbai.polygonscan.com/address/0x22e5768fD06A7FB86fbB928Ca14e9D395f7C5363#writeContract'> Go to token Address </a> */}
           <Typography width={1} variant="h6" mt={6} mb={2} fontWeight={'bold'} >Bid History</Typography>
-          {
-            auction.highestBid ?
-              events?.bidPlaceds.map(
-                (bidEvent, index) =>
-                  <EventListing key={bidEvent.auctionId} bidEvent={bidEvent} first={index === 0} />
-              ) : <Typography>No Bids Yet</Typography>
-          }
+
         </Grid>
 
       </Grid>

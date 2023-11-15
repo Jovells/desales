@@ -32,7 +32,7 @@ contract Auction is Ownable {
 		bool withdrawn;
 		bool claimed;
 		bool preventSniping;
-		uint256 timestamp;
+		// uint256 timestamp;
 	}
 
 	uint256 public auctionCount;
@@ -126,21 +126,23 @@ contract Auction is Ownable {
 
 		uint256 _tokenId = DesalesNFT(dnftAddress).mint(tokenURI);
 
-		auctions[++auctionCount] = AuctionInfo({
-			seller: msg.sender,
-			stablecoin: IERC20(_stablecoin),
-			startTime: _startTime,
-			endTime: _endTime,
-			highestBidder: address(0),
-			highestBid: 0,
-			startPrice: _startPrice,
-			tokenId: _tokenId,
-			tokenContract: dnftAddress,
-			withdrawn: false,
-			claimed: false,
-			preventSniping: _preventSniping,
-			timestamp: block.timestamp
-		});
+		 auctionCount = auctionCount + 1;
+
+		
+			auctions[auctionCount].seller = msg.sender;
+			auctions[auctionCount].stablecoin = IERC20(_stablecoin);
+			auctions[auctionCount].startTime = _startTime;
+			auctions[auctionCount].endTime = _endTime;
+			auctions[auctionCount].highestBidder = address(0);
+			auctions[auctionCount].highestBid = 0;
+			auctions[auctionCount].startPrice = _startPrice;
+			auctions[auctionCount].tokenId = _tokenId;
+			auctions[auctionCount].tokenContract = dnftAddress;
+			auctions[auctionCount].withdrawn = false;
+			auctions[auctionCount].claimed = false;
+			auctions[auctionCount].preventSniping = _preventSniping;
+			// auctions[++auctionCount].timestamp = block.timestamp;
+	
 
 		emit AuctionCreated(
 			auctionCount,

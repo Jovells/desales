@@ -15,41 +15,7 @@ const Home = () => {
   const [auctions, setAuctions] = useState([]);
   const {Auction} = useContracts()
   useEffect(()=>{
-    //fetch auctionCreateds events from the graph
 
-    // async function getAuctionEvents() {
-    //   const queryUrl = GraphURL;
-    //   const query = `{
-    //     auctionCreateds {
-    //       auctionId
-    //       seller
-    //       stablecoin
-    //       tokenId
-    //       tokenContract
-    //       endTime
-    //       startTime
-    //       startPrice
-    //       blockTimestamp
-    //       transactionHash
-    //     }
-    //   }`;
-
-    //   const res = await fetch(queryUrl, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       'Accept': 'application/json',
-    //     },
-    //     body: JSON.stringify({ query }),
-    //   }).catch((error) => console.log(error));
-
-    //   const data = await res.json()
-    //   console.log(data)
-    //   setAuctions(data?.data?.auctionCreateds)
-    //   return data
-
-    // }
-    
     async function getAuctionEvents() {
       const aucs = await Auction.getRecentAuctions(10)
       setAuctions(
@@ -66,7 +32,7 @@ const Home = () => {
             timestamp: Number(auc.timestamp),
             transactionHash: Auction.target
           }
-        })
+        }).filter(auc=>auc.auctionId!==0)
       )
 
     }

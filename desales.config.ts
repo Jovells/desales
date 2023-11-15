@@ -1,9 +1,11 @@
 import {getDefaultWallets} from "@rainbow-me/rainbowkit";
   import { configureChains, createConfig } from 'wagmi';
   import {
-  hardhat, mainnet, polygonMumbai
+  hardhat, mainnet, polygonMumbai, telosTestnet
   } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
+
+
 
 
 /* @todo: define topos chains
@@ -11,7 +13,7 @@ https://wagmi.sh/react/chains#build-your-own
  const topos...
  */
 
- const productionChain = polygonMumbai /*todo: use topos */
+ const productionChain = telosTestnet /*todo: use topos */
 
  const envChains = process.env.NODE_ENV === "production" ? [productionChain] : [hardhat, productionChain, /*todo: add topos */]
 
@@ -37,8 +39,8 @@ https://wagmi.sh/react/chains#build-your-own
   export const desalesChains = chains
   export const desalesWagmiConfig = wagmiConfig
 
-export const AuctionAddress = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707";
-export const DesalesNFTAddress = "0x0165878A594ca255338adfa4d48449f69242Eb8F";
-export const MockStableCoinAddress = "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9";
+export const AuctionAddress = "0x0aDa7CfA69Add88C2BF2B2e15979A4d509Deaa1A";
+export const DesalesNFTAddress = "0x15679521316EF7ce5a5D6C320154CffF84447257";
+export const MockStableCoinAddress = "0x9d9592dF49D8E36b001C0A1AD65EAAadcD0b58b7";
 
   export const chain = process.env.NODE_ENV === "production" ? productionChain : hardhat

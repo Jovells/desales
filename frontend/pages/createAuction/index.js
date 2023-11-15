@@ -35,14 +35,10 @@ const CreateAuction = () => {
     data.startTime = Time.getTimestampInSeconds(data.startTime);
     data.endTime = Time.getTimestampInSeconds(data.endTime);
     data.preventSniping = data.preventSniping === 'on' ? true : false;
-    let tokenURI = "ipfs://bafyreiecwvlht6ibr75mwymyeqr6rdpssielikblwi46tb4nhkjdbpedha/metadata.json";
 
-    if (true) {
       const toastId = toast.loading("Uploading to IPFS");
 
-      // const tokenURI = (await storeNFT(image, data)).url;
-
-      // tokenURI = "ipfs://bafyreih6xzjlz7mavvydwkdrok35x3mjza4ry3cs6325t3rvppapfv6eiy/metadata.json"
+      const tokenURI = (await storeNFT(image, data)).url;
 
 
       toast.loading("Upload Successful. Minting NFT and Creating Auction...", { id: toastId });
@@ -72,7 +68,7 @@ const CreateAuction = () => {
           toast.error(`This just happened: ${err.toString()}`, { id: toastId })}
           );
 
-    }
+    
 
 
 
