@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 //test usdt contract for hardhat tests
 //implement ERC20 contract
-contract Stablecoin is ERC20 {
+contract MockStableCoin is ERC20 {
     function decimals() public override pure returns (uint8){
         return 6;
     }

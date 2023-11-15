@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./nft.sol";
+import "./DesalesNFT.sol";
 
 contract Auction is Ownable {
 	address public dnftAddress;
@@ -32,6 +32,7 @@ contract Auction is Ownable {
 		bool withdrawn;
 		bool claimed;
 		bool preventSniping;
+		uint256 timestamp;
 	}
 
 	uint256 public auctionCount;
@@ -137,7 +138,8 @@ contract Auction is Ownable {
 			tokenContract: dnftAddress,
 			withdrawn: false,
 			claimed: false,
-			preventSniping: _preventSniping
+			preventSniping: _preventSniping,
+			timestamp: block.timestamp
 		});
 
 		emit AuctionCreated(
