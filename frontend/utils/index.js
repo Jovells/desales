@@ -1,4 +1,5 @@
 import { Interface } from "ethers";
+import { MockStableCoinAddress } from "../desales.config";
 
 export class Time {
     static formatDate(timestamp) {
@@ -87,10 +88,10 @@ export function convertIpfsUrl(ipfsUrl) {
   return `https://ipfs.io/ipfs/${cid}/${path}`;
 }
 export const stablecoins = [
-  { name: 'USDC', address: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174' },
-  { name: 'USDT', address: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f' },
-  { name: 'DAI', address: '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063' },
-  { name: 'AUSDC', address: '0x22e5768fD06A7FB86fbB928Ca14e9D395f7C5363' },
+  { name: 'USDC', address: MockStableCoinAddress },
+  { name: 'USDT', address: MockStableCoinAddress },
+  { name: 'DAI', address: MockStableCoinAddress },
+  { name: 'AUSDC', address: MockStableCoinAddress },
 ];
 
 

@@ -8,37 +8,49 @@ import Link from "next/link";
 import { GraphURL } from "../utils";
 import { MetaHeader } from "./../components/MetaHeader"
 import { useContracts } from "../hooks/contracts";
+import LoadingComponent from "../components/LoadingComponent";
 
 
 const Home = () => {
 
   const [auctions, setAuctions] = useState([]);
   const {Auction} = useContracts()
+  const [loadingAuctions, setLoadingAuctions] = useState(false);
   useEffect(()=>{
 
     async function getAuctionEvents() {
-      const aucs = await Auction.getRecentAuctions(10)
-      setAuctions(
-        aucs.map(auc=>{
-          return {
-            auctionId: Number(auc.tokenId),
-            seller: auc.seller,
-            stablecoin: auc.stablecoin,
-            tokenId: Number(auc.tokenId),
-            tokenContract: auc.tokenContract,
-            endTime: Number(auc.endTime),
-            startTime: Number(auc.startTime),
-            startPrice: Number(auc.startPrice),
-            timestamp: Number(auc.timestamp),
-            transactionHash: Auction.target
-          }
-        }).filter(auc=>auc.auctionId!==0)
-      )
 
+      try {
+        setLoadingAuctions(true)
+        const aucs = await Auction.getRecentAuctions(10)
+        setAuctions(
+          aucs.map(auc=>{
+            return {
+              auctionId: Number(auc.tokenId),
+              seller: auc.seller,
+              stablecoin: auc.stablecoin,
+              tokenId: Number(auc.tokenId),
+              tokenContract: auc.tokenContract,
+              endTime: Number(auc.endTime),
+              startTime: Number(auc.startTime),
+              startPrice: Number(auc.startPrice),
+              timestamp: Number(auc.timestamp),
+              transactionHash: Auction.target
+            }
+          }).filter(auc=>auc.auctionId!==0)
+        )
+      } catch (err) {
+        console.error(err)
+
+      }
+
+      setLoadingAuctions(false)
     }
-    getAuctionEvents()
 
-  },[])
+      getAuctionEvents()
+
+
+  },[window?.ethereum?.chainId])
   return (
     <>
       <MetaHeader />
@@ -65,10 +77,14 @@ const Home = () => {
           <Typography mt={5} mb={2} variant="h5" fontWeight={500} >
             Latest Auctions
           </Typography>
-
-    {auctions&&auctions.map((auction, index) => 
+    
+    {loadingAuctions?<LoadingComponent height="100%" alignHorizontal="left"/>:auctions?auctions.map((auction, index) => 
           <AuctionListing first={index === 0} key={auction.auctionId} auction={auction}  />
-    )}
+    ):<Typography >
+    No Auctions Available
+  </Typography>
+  
+  }
         </Grid>
     </>
   );

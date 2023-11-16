@@ -25,8 +25,8 @@ https://wagmi.sh/react/chains#build-your-own
   );
   
  const { connectors } = getDefaultWallets({
-    appName: 'My RainbowKit App',
-    projectId: 'YOUR_PROJECT_ID',
+    appName: 'Desales',
+    projectId: '4bb311e76fca80e38887406bc212442d',
     chains
   });
   
@@ -39,8 +39,8 @@ https://wagmi.sh/react/chains#build-your-own
   export const desalesChains = chains
   export const desalesWagmiConfig = wagmiConfig
 
-export const AuctionAddress = "0x0aDa7CfA69Add88C2BF2B2e15979A4d509Deaa1A";
-export const DesalesNFTAddress = "0x15679521316EF7ce5a5D6C320154CffF84447257";
+export const AuctionAddress = "0x695C1De27A868d772263c605eD9d9Cc855511754";
+export const DesalesNFTAddress = "0x23DD585F4600cc26744CEE8A3F710cF3546a8967";
 export const MockStableCoinAddress = "0x9d9592dF49D8E36b001C0A1AD65EAAadcD0b58b7";
 
   export const chain = process.env.NODE_ENV === "production" ? productionChain : hardhat

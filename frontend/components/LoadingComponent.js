@@ -3,11 +3,11 @@ import Image from "next/image";
 import LoadingIcon from "../public/assets/spinner.svg"
 
 
-export default function LoadingComponent() {
+export default function LoadingComponent({height= '80vh', alignHorizontal ='center', alignVertical='center' }) {
   return (
     <Stack
-    height={'80vh'}
-    direction={"row"} alignItems={'center'} justifyContent={'center'}>
+    height={height}
+    direction={"row"} alignItems={alignVertical} justifyContent={alignHorizontal}>
       <Image    priority
     src={LoadingIcon}
     alt="Follow us on Twitter"

@@ -10,17 +10,6 @@ import Address from "../../components/address";
 import EventListing from "../../components/eventListing";
 import { useContracts } from "../../hooks/contracts";
 import { Time, convertIpfsUrl, getTxnEventData, stablecoins } from "../../utils";
-import { GraphURL } from "../../utils/";
-import { createPublicClient, http } from 'viem'
-import { telosTestnet } from 'viem/chains'
-import { getContract } from 'viem'
-import { abi } from './../../hooks/abi'
-import { createWalletClient, custom } from 'viem'
-
-
-
-
-
 import LoadingComponent from "../../components/LoadingComponent";
 
 
@@ -42,11 +31,30 @@ function AuctionDetails() {
   const { Auction, DesalesNFT, MockStableCoin } = useContracts()
   const account = useAccount()
   const { openConnectModal, connectModalOpen } = useConnectModal();
-
-
   const [auction, setAuction] = useState({});
+  const [refresh, setRefresh] = useState(0);
+  const [mockStableCoinBalance, setMockStableCoinBalance] = useState(0);
+
+
+
+  const auctionStableCoin = auction.stablecoin && MockStableCoin.attach(auction.stablecoin)
 
   const [bid, setBid] = useState(0);
+
+  useEffect(() => {
+    if (!auction.stablecoin || !account.address) return;
+    async function getMockStableCoinBalance() {
+      console.log('auctionStableCoin', auctionStableCoin)
+      console.log('account.address', account.address)
+      const _balance = await auctionStableCoin.balanceOf(account.address)
+      const balance = (Number(_balance) * 10 ** -6).toFixed(2)
+      setMockStableCoinBalance(balance)
+    } try {
+      getMockStableCoinBalance()
+    } catch (error) {
+      console.log(error)
+    }
+  }, [account.address, auction.stablecoin, refresh])
 
   useEffect(() => {
     async function getAuctionData() {
@@ -57,20 +65,11 @@ function AuctionDetails() {
       const auctionDetailsFromContract = await Auction.getAuction(router.query.auctionId)
       const d = auctionDetailsFromContract;
       const tokenUriFromContract = await DesalesNFT.tokenURI(auctionDetailsFromContract?.tokenId)
-      const obj = {}
-      obj.seller = auctionDetailsFromContract.seller
-      obj.stablecoin = auctionDetailsFromContract.stablecoin
-      obj.startTime = auctionDetailsFromContract.startTime
-      obj.endTime = auctionDetailsFromContract.endTime
-      obj.startPrice = auctionDetailsFromContract.startPrice
-      obj.highestBidder = auctionDetailsFromContract.highestBidder
-      obj.highestBid = auctionDetailsFromContract.highestBid
-      obj.tokenId = auctionDetailsFromContract.tokenId
-      obj.tokenContract = auctionDetailsFromContract.tokenContract
-      obj.withdrawn = auctionDetailsFromContract.withdrawn
-      obj.claimed = auctionDetailsFromContract.claimed
-      obj.preventSniping = auctionDetailsFromContract.preventSniping
-      
+      for (const key in auctionDetailsFromContract) {
+        console.log(key, auctionDetailsFromContract[key])
+      }
+      const obj = auctionDetailsFromContract.toObject()
+
       let auc = convertBigIntsToNumbers(obj);
       const metadata = await (await fetch(convertIpfsUrl(tokenUriFromContract))).json();
       console.log('m', metadata, 'a', auc);
@@ -87,81 +86,85 @@ function AuctionDetails() {
     }
 
 
-  }, [router.query.auctionId]);
+  }, [router.query.auctionId, refresh]);
 
   //read withdrawal and Bid EVents from The Graph
 
 
   async function handleBid() {
-    const walletClient = createWalletClient({
-      chain: telosTestnet,
-      transport: custom(window.ethereum)
-    })
-    
-     const publicClient = createPublicClient({
-      chain: telosTestnet,
-      transport: http(),
-    })
-    
-    // 1. Create contract instance
-     const viemAuction = getContract({
-      address: '0x0aDa7CfA69Add88C2BF2B2e15979A4d509Deaa1A',
-      abi: abi,
-      walletClient,
-      publicClient
-    })
-    
 
     if (!account.isConnected) {
       return openConnectModal();
     }
-    const parsedBid = parseInt(bid * 10 ** 6)
+    const parsedBid = BigInt(bid * 10 ** 6)
+    const auctionId = BigInt(router.query.auctionId)
+    let toastId;
     if (parsedBid <= auction.highestBid) {
 
       return toast.error('Bid must be higher than highest bid');
     }
-    const allowance = await MockStableCoin.allowance(account.address, Auction.target)
-    if (allowance < BigInt(parsedBid)) {
-      const toastId = toast.loading("Seeking Approval For token Transfer");
-      const approval = await MockStableCoin.approve(Auction.target, BigInt(parsedBid) - allowance)
+    const allowance = await auctionStableCoin.allowance(account.address, Auction.target)
+    console.log('allowance', allowance)
+    if (allowance < parsedBid) {
+      toastId = toast.loading("Seeking Approval For token Transfer");
+      const approval = await auctionStableCoin.approve(Auction.target, parsedBid);
       const txnReceipt = await approval.wait()
       toast.success("Approval Successful", { id: toastId });
     }
-    // const toastId = toast.loading("Placing Bid");
-    //   (await Auction.placeBid(router.query.auctionId, parsedBid, {gasLimit: 30000})).wait().then((txnReceipt) => {
-    //     toast.success("Bid Placed Successfully", { id: toastId });
-    //   })
+    try {
+      toastId = toast.loading("Placing Bid", { id: toastId });
 
-      const hash = await viemAuction.write.placeBid([router.query.auctionId, parsedBid],{
-        account: account.address,
-      })
+      console.log("auctionId", auctionId, "parsedBid", parsedBid);
+      const txn = await Auction.placeBid(auctionId, parsedBid, { gasLimit: 3e7 });
+      const txnReceipt = txn.wait();
+      toast.success("Bid Placed Successfully", { id: toastId });
+      setRefresh(Date.now());
 
-    
+    } catch (error) {
+      toast.error(error.message, { id: toastId });
+      console.error(error)
+    }
 
-    toast.dismiss();
 
   }
   async function handleWithdraw() {
-    console.log('withdraw');
-    (await Auction.withdraw(router.query.auctionId)).wait().then((txnReceipt) => {
-      toast.success("Withdrawn Successfully");
-    })
+    const toastId = toast.loading("Withdrawing");
+    try {
+      console.log('withdraw');
+      const txn = await Auction.withdraw(router.query.auctionId);
+      await txn.wait();
+      toast.success("Withdrawn Successfully", { id: toastId });
+      setRefresh(Date.now());
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
+    }
   }
   async function handleClaim() {
+    const toastId = toast.loading("Withdrawing");
 
     console.log('claim');
-    (await Auction.claim(router.query.auctionId)).wait().then((txnReceipt) => {
-      toast.success("Claimed Successfully");
-    })
+    try {
+      const txn = await Auction.claim(router.query.auctionId);
+      await txn.wait();
+      toast.success("Claimed Successfully", { id: toastId });
+      setRefresh(Date.now());
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
+    }
   }
 
-  async function handlemint(){
+  async function handlemint() {
     console.log('mint');
     const toastId = toast.loading("Minting");
-    (await MockStableCoin.mint()).wait().then((txnReceipt) => {
+    try {
+      await auctionStableCoin.mint();
       toast.success("Minted Successfully", { id: toastId });
-      toast.dismiss(toastId)
-    })
+    } catch (err) {
+      console.log(err);
+      toast.error(err, { id: toastId });
+    }
   }
 
 
@@ -170,7 +173,7 @@ function AuctionDetails() {
   const auctionEnded = auction.endTime < Date.now() / 1000;
   const claimed = auctionEnded && auction.claimed && isHighestBidder;
   const withDrawable = auctionEnded && !auction.withdrawn && isSeller;
-  const claimable = !claimed && isHighestBidder && auctionEnded && isHighestBidder;
+  const claimable = !claimed && isHighestBidder && auctionEnded;
   console.log({
     bidEnded: auctionEnded, claimable, claimed, withDrawable, hb: auction.highestBidder, c: (auction.highestBidder === (account?.address)), cd: (events?.claimeds[0]?.bidder),
     ac: (auction?.claimed),
@@ -222,7 +225,10 @@ function AuctionDetails() {
             }
           }}
           overflow={'auto'} md={5}   >
-                                      <Button onClick={handlemint}>Click to Mint MockStablecoin</Button>
+          {account.address && <> <div>Your MockStablecoin balance = {mockStableCoinBalance}</div>
+            <Button variant='outlined' onClick={handlemint}>Click Here to Mint MockStablecoin</Button>
+          </>
+          }
 
 
           <Grid maxWidth={400} mb={1}>
@@ -271,12 +277,13 @@ function AuctionDetails() {
                   <Typography variant="h4" display={'inline'} fontWeight={'bold'} >{(auction[auctionStartedBidded || auctionEnded ? 'highestBid' : 'startPrice'] * 10 ** -6).toFixed(2)}</Typography>
                   <Typography pl={1} variant="h4" display={'inline'} color={'text.secondary'} > {stablecoins.find(coin => coin.address.toUpperCase() === auction.stablecoin?.toUpperCase())?.name}</Typography>
                 </Stack>
+                {!auctionEnded && <Address address={auction.highestBidder} />}
               </Grid>
             </Stack>
             {auctionStarted && <>
 
               <Grid container direction={'column'} >
-                {claimable && <>
+                {isHighestBidder && auctionEnded && <>
                   <Typography sx={{ bgcolor: 'black', p: 2, borderRadius: 2, fontWeight: 'bold', color: 'lightGreen' }} display={"flex"} mt={2} mb={1} variant="caption" width={160}  >
                     Congratulations! You won the Auction!
                   </Typography>
@@ -284,9 +291,18 @@ function AuctionDetails() {
                     You can claim your item now:</Typography>
 
                     <Button onClick={handleClaim} sx={{ mb: 2 }} variant="contained">Claim</Button>
-                  </> : <Typography display={"block"} mt={2} mb={1} variant="caption" width={180}  >
-                    You have claimed this item.
+                  </> : <>
+                  <Typography mt={2} mb={1} variant="caption" width={180}  >
+                    NFT Address:
                   </Typography>
+                    <Address address={DesalesNFT.target} />
+                    <Typography mt={2} mb={1} variant="caption" width={180}  >
+                      TokenId:
+                    </Typography>
+                    <Typography>
+                      {auction.tokenId}
+                    </Typography>
+                  </>
 
                   }</>
                 }
@@ -344,12 +360,6 @@ function AuctionDetails() {
               <Typography textAlign={'right'} textOverflow={'ellipsis'} pl={3} >{auction.description}</Typography>
             </Stack>
           </Grid>
-
-        </Grid>
-
-        <Grid width={1} md={11}>
-          {/* <a href='https://mumbai.polygonscan.com/address/0x22e5768fD06A7FB86fbB928Ca14e9D395f7C5363#writeContract'> Go to token Address </a> */}
-          <Typography width={1} variant="h6" mt={6} mb={2} fontWeight={'bold'} >Bid History</Typography>
 
         </Grid>
 

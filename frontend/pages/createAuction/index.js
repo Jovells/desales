@@ -36,37 +36,33 @@ const CreateAuction = () => {
     data.endTime = Time.getTimestampInSeconds(data.endTime);
     data.preventSniping = data.preventSniping === 'on' ? true : false;
 
-      const toastId = toast.loading("Uploading to IPFS");
-
-      const tokenURI = (await storeNFT(image, data)).url;
-
-
-      toast.loading("Upload Successful. Minting NFT and Creating Auction...", { id: toastId });
-
-      console.log(Auction)
-
-      Auction.createAuction(data.currency, data.startTime, data.endTime, data.startingPrice, tokenURI, data.preventSniping)
-        .then((txn) => {
-          txn.wait().then((txnReceipt) => {
-            for (let log of txnReceipt.logs) {
-              try {
-                const event = Auction.interface.parseLog(log);
-                if (event.name === 'AuctionCreated') {
-                  console.log('AuctionCreated event details:', event.args);
-                  event.args && router.push(`/auctionDetails/${event.args.auctionId}`);
-                  break;
+    const toastId = toast.loading("Uploading to IPFS");
+      try {
+        const tokenURI = (await storeNFT(image, data)).url;
+        toast.loading("Upload Successful. Minting NFT and Creating Auction...", { id: toastId });
+  
+        const txn = await Auction.createAuction(data.currency, data.startTime, data.endTime, data.startingPrice, tokenURI, data.preventSniping)
+  
+        const txnReceipt = await txn.wait()
+        
+        for (let log of txnReceipt.logs) {
+                try {
+                  const event = Auction.interface.parseLog(log);
+                  if (event.name === 'AuctionCreated') {
+                    console.log('AuctionCreated event details:', event.args);
+                    event.args && router.push(`/auctionDetails/${event.args.auctionId}`);
+                    break;
+                  }
+                } catch (err) {
+                  // Ignore errors - these are likely logs from other contracts
                 }
-              } catch (err) {
-                // Ignore errors - these are likely logs from other contracts
               }
-            }
-            toast.success("Auction Created Successfully", { id: toastId });
-          })
-        }).then(() => toast.dismiss(toastId))
+              toast.success("Auction Created Successfully", { id: toastId });
+      } catch (err) {
+        console.log(err); 
+        toast.error(`This just happened: ${err.toString()}`, { id: toastId });
+      }
 
-        .catch((err) => {console.log(err); 
-          toast.error(`This just happened: ${err.toString()}`, { id: toastId })}
-          );
 
     
 

@@ -1,5 +1,22 @@
 import { Tooltip, Button, Box, Typography, Chip } from "@mui/material";
 
+function stringType(str) {
+  const isBlockNumber = /^\d+$/.test(str);
+  const isWalletAddress = /^0x[a-fA-F0-9]{40}$/.test(str);
+  const isTransactionHash = /^0x[a-fA-F0-9]{64}$/.test(str);
+
+  if (isBlockNumber) {
+    return 'block';
+  } else if (isWalletAddress) {
+    return 'address';
+  } else if (isTransactionHash) {
+    return 'tx';
+  } else {
+    return 'unknown';
+  }
+}
+
+
 export default function Address({address, chipProps,  otherProps={}, chars, TypographyProps}) {
   const copyToClipboard = async (text) => {
     try {
@@ -17,7 +34,7 @@ export default function Address({address, chipProps,  otherProps={}, chars, Typo
           variant="subtitle2"
           {...TypographyProps}
           component="a"
-          href={`https://mumbai.polygonscan.com/search?f=0&q=${address}`}
+          href={`https://testnet.teloscan.io/${stringType(address)}/${address}`}
           target="_blank"
           rel="noopener noreferrer"
           sx={{ textDecoration: 'none', color: 'inherit' }}

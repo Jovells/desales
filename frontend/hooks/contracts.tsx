@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { AuctionAddress, DesalesNFTAddress, MockStableCoinAddress } from "../../desales.config";
+import { AuctionAddress, DesalesNFTAddress, MockStableCoinAddress, chain } from "../desales.config";
 import {Auction} from "../../typechain-types/contracts/Auction";
 import {DesalesNFT} from "../../typechain-types/contracts/DesalesNFT";
 import {MockStableCoin} from "../../typechain-types/contracts/MockStableCoin";
@@ -9,6 +9,8 @@ import AuctionData from "../../artifacts/contracts/Auction.sol/Auction.json";
 import DesalesNFTData from "../../artifacts/contracts/DesalesNFT.sol/DesalesNFT.json";
 import MockStableCoinData from "../../artifacts/contracts/MockStableCoin.sol/MockStableCoin.json";
 import { useAccount } from "wagmi";
+import toast from "react-hot-toast";
+import { useChainModal } from "@rainbow-me/rainbowkit";
 
 
 interface ContractContext {
@@ -40,6 +42,17 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
 
   const [contracts, setContracts] = useState<ContractContext | null>(null);
   const account = useAccount()
+  const {openChainModal} = useChainModal()
+  console.log('openChainModal', openChainModal)
+
+  useEffect(() => {
+    const currentChainId = parseInt(window.ethereum.chainId);
+    if(currentChainId !== chain.id && openChainModal){
+      toast("please switch to Telos Network")
+      openChainModal()
+    }
+  }, [openChainModal])
+  
   
 
 
@@ -47,7 +60,7 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
     if (typeof window == "undefined") {
       return;
     }
-   
+
     async function fetchContracts() {
     const provider = new ethers.BrowserProvider(window.ethereum);
     console.log("provider", provider);

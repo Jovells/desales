@@ -21,7 +21,7 @@ contract Auction is Ownable {
 
 	struct AuctionInfo {
 		address seller;
-		IERC20 stablecoin;
+		address stablecoin;
 		uint256 startTime;
 		uint256 endTime;
 		uint256 startPrice;
@@ -130,7 +130,7 @@ contract Auction is Ownable {
 
 		
 			auctions[auctionCount].seller = msg.sender;
-			auctions[auctionCount].stablecoin = IERC20(_stablecoin);
+			auctions[auctionCount].stablecoin = _stablecoin;
 			auctions[auctionCount].startTime = _startTime;
 			auctions[auctionCount].endTime = _endTime;
 			auctions[auctionCount].highestBidder = address(0);
@@ -176,13 +176,13 @@ contract Auction is Ownable {
 			"Bid must be higher than the current highest bid"
 		);
 		require(
-			auction.stablecoin.transferFrom(msg.sender, address(this), _amount),
+			IERC20(auction.stablecoin).transferFrom(msg.sender, address(this), _amount),
 			"Transfer failed"
 		);
 
 		// Refund the previous highest bidder
 		if (auction.highestBidder != address(0)) {
-			auction.stablecoin.transfer(
+			IERC20(auction.stablecoin).transfer(
 				auction.highestBidder,
 				auction.highestBid
 			);
@@ -208,18 +208,6 @@ contract Auction is Ownable {
 		);
 	}
 
-	// function endAuction(uint256 _auctionId) public onlyAuctionOpen(_auctionId) {
-	//     AuctionInfo storage auction = auctions[_auctionId];
-	//     auction.auctionState = AuctionState.Ended;
-	//     auction.auctionEnded = true; // Set auctionEnded to true when ending manually
-
-	//     // Transfer funds to the auction seller
-	//     auction.stablecoin.transfer(auction.seller, auction.highestBid);
-
-	//     // Transfer the NFT to the highest bidder
-	//     _safeMint(auction.highestBidder, _auctionId);
-	// }
-
 	function claim(uint256 _auctionId) external onlyAuctionEnded(_auctionId) {
 		AuctionInfo storage auction = auctions[_auctionId];
 		require(
@@ -242,7 +230,7 @@ contract Auction is Ownable {
 	) external onlyAuctionEnded(_auctionId) {
 		AuctionInfo storage auction = auctions[_auctionId];
 		require(!auction.withdrawn, "Funds already withdrawn");
-		auction.stablecoin.transfer(msg.sender, auction.highestBid);
+		IERC20(auction.stablecoin).transfer(msg.sender, auction.highestBid);
 		auction.withdrawn = true;
 		emit Withdrawal(_auctionId, msg.sender, auction.highestBid);
 	}

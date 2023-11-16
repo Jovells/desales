@@ -1,9 +1,11 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import dotenv from 'dotenv'
+import "@nomicfoundation/hardhat-verify";
+import "hardhat-deploy";
+import "@nomiclabs/hardhat-ethers";
 dotenv.config();
-require("hardhat-deploy");
-require("@nomiclabs/hardhat-ethers")
+
 
 const config: HardhatUserConfig = {
   solidity: "0.8.20",
@@ -17,6 +19,9 @@ const config: HardhatUserConfig = {
         accounts: [process.env.PRIVATE_KEY as string],
         chainId: 41,
       },
+  },
+  sourcify: {
+    enabled: true,
   }
 };
 
