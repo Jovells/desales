@@ -11,6 +11,15 @@ import EventListing from "../../components/eventListing";
 import { useContracts } from "../../hooks/contracts";
 import { Time, convertIpfsUrl, getTxnEventData, stablecoins } from "../../utils";
 import { GraphURL } from "../../utils/";
+import { createPublicClient, http } from 'viem'
+import { telosTestnet } from 'viem/chains'
+import { getContract } from 'viem'
+import { abi } from './../../hooks/abi'
+import { createWalletClient, custom } from 'viem'
+
+
+
+
 
 import LoadingComponent from "../../components/LoadingComponent";
 
@@ -84,6 +93,24 @@ function AuctionDetails() {
 
 
   async function handleBid() {
+    const walletClient = createWalletClient({
+      chain: telosTestnet,
+      transport: custom(window.ethereum)
+    })
+    
+     const publicClient = createPublicClient({
+      chain: telosTestnet,
+      transport: http(),
+    })
+    
+    // 1. Create contract instance
+     const viemAuction = getContract({
+      address: '0x0aDa7CfA69Add88C2BF2B2e15979A4d509Deaa1A',
+      abi: abi,
+      walletClient,
+      publicClient
+    })
+    
 
     if (!account.isConnected) {
       return openConnectModal();
@@ -100,9 +127,13 @@ function AuctionDetails() {
       const txnReceipt = await approval.wait()
       toast.success("Approval Successful", { id: toastId });
     }
-    const toastId = toast.loading("Placing Bid");
-      (await Auction.placeBid(router.query.auctionId, parsedBid, {gasLimit: 30000})).wait().then((txnReceipt) => {
-        toast.success("Bid Placed Successfully", { id: toastId });
+    // const toastId = toast.loading("Placing Bid");
+    //   (await Auction.placeBid(router.query.auctionId, parsedBid, {gasLimit: 30000})).wait().then((txnReceipt) => {
+    //     toast.success("Bid Placed Successfully", { id: toastId });
+    //   })
+
+      const hash = await viemAuction.write.placeBid([router.query.auctionId, parsedBid],{
+        account: account.address,
       })
 
     

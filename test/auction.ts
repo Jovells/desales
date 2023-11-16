@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Auction, DesalesNFT, Stablecoin } from "../typechain-types";
+import { Auction, DesalesNFT, MockStableCoin } from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
 
@@ -8,7 +8,7 @@ describe("Auction", function () {
 const FUTURE_DATE = Math.floor(new Date(Date.now() + 7 * 24 * 60 * 60).getTime() / 1000)*2;
   let auction: Auction,
     dnft: DesalesNFT,
-    stablecoin: Stablecoin,
+    mockStableCoin: MockStableCoin,
     owner: SignerWithAddress,
     seller: SignerWithAddress,
     bidder1: SignerWithAddress,
@@ -18,11 +18,11 @@ const FUTURE_DATE = Math.floor(new Date(Date.now() + 7 * 24 * 60 * 60).getTime()
       beforeEach(async function () {
         [owner, seller, bidder1, bidder2] = await ethers.getSigners();
 
-        const Stablecoin = await ethers.getContractFactory("Stablecoin");
-        stablecoin = (await Stablecoin.deploy()) as Stablecoin;
+        const MockStableCoin = await ethers.getContractFactory("MockStableCoin");
+        mockStableCoin = (await MockStableCoin.deploy()) as MockStableCoin;
         
-        stablecoin.connect(owner).transfer(bidder1.address, 100000);
-        stablecoin.connect(owner).transfer(bidder2.address, 100000);
+        mockStableCoin.connect(owner).transfer(bidder1.address, 100000);
+        mockStableCoin.connect(owner).transfer(bidder2.address, 100000);
         
         const Auction = await ethers.getContractFactory("Auction");
         auction = (await Auction.deploy('0x0000000000000000000000000000000000000000')) as Auction;
@@ -41,7 +41,7 @@ const FUTURE_DATE = Math.floor(new Date(Date.now() + 7 * 24 * 60 * 60).getTime()
           
             
           const tx = await auction.connect(seller)
-            .createAuction(stablecoin.target, startTime, FUTURE_DATE, 10, 'ipgg.com', true, { gasLimit: 3e7 });
+            .createAuction(mockStableCoin.target, startTime, FUTURE_DATE, 10, 'ipgg.com', true, { gasLimit: 3e7 });
         const receipt = await tx.wait();
         const auctionId = await auction.auctionCount();
         tokenId = auctionId;
@@ -52,7 +52,7 @@ const FUTURE_DATE = Math.floor(new Date(Date.now() + 7 * 24 * 60 * 60).getTime()
           // Assert that the auction was created
           expect(await auction.getAuction(auctionId)).to.deep.equal([
             seller.address,
-            stablecoin.target,
+            mockStableCoin.target,
             startTime,
             FUTURE_DATE,
             10n,
@@ -75,23 +75,23 @@ const FUTURE_DATE = Math.floor(new Date(Date.now() + 7 * 24 * 60 * 60).getTime()
             
             const startTime = block!.timestamp;
             const tx = await auction.connect(seller)
-            .createAuction(stablecoin.target, startTime, block!.timestamp +FUTURE_DATE, 10, "ghh", true, { gasLimit: 3e7 });
+            .createAuction(mockStableCoin.target, startTime, block!.timestamp +FUTURE_DATE, 10, "ghh", true, { gasLimit: 3e7 });
         const receipt = await tx.wait();
         auctionId = await auction.auctionCount();
 
         });
         it("should allow users to place bids", async function () {
-          // Approve the auction contract to transfer stablecoin on behalf of bidder1
-          await stablecoin.connect(bidder1).approve(auction.target, 100);
+          // Approve the auction contract to transfer mockStableCoin on behalf of bidder1
+          await mockStableCoin.connect(bidder1).approve(auction.target, 100);
 
           //check balance before
-            const bidder1BalanceBefore = await stablecoin.balanceOf(bidder1.address)
+            const bidder1BalanceBefore = await mockStableCoin.balanceOf(bidder1.address)
 
           // Place a bid on the auction
           await auction.connect(bidder1).placeBid(auctionId, 100, { gasLimit: 3e7 });
 
             //check balance after
-            const bidder1BalanceAfter = await stablecoin.balanceOf(bidder1.address)
+            const bidder1BalanceAfter = await mockStableCoin.balanceOf(bidder1.address)
 
         //Assert that the bidder1 was deducted the bid amount
         expect(bidder1BalanceAfter).to.equal(bidder1BalanceBefore- 100n);
@@ -101,12 +101,12 @@ const FUTURE_DATE = Math.floor(new Date(Date.now() + 7 * 24 * 60 * 60).getTime()
         });
 
         it("should refund the previous highest bidder", async function () {
-          // Approve the auction contract to transfer stablecoin on behalf of bidder1 and bidder2
-          await stablecoin.connect(bidder1).approve(auction.target, 100);
-          await stablecoin.connect(bidder2).approve(auction.target, 200);
+          // Approve the auction contract to transfer mockStableCoin on behalf of bidder1 and bidder2
+          await mockStableCoin.connect(bidder1).approve(auction.target, 100);
+          await mockStableCoin.connect(bidder2).approve(auction.target, 200);
 
           //check balance
-          const bidder1BalanceBefore = await stablecoin.balanceOf(bidder1.address)
+          const bidder1BalanceBefore = await mockStableCoin.balanceOf(bidder1.address)
 
           // Place a bid on the auction
           await auction.connect(bidder1).placeBid(auctionId, 100);
@@ -116,12 +116,12 @@ const FUTURE_DATE = Math.floor(new Date(Date.now() + 7 * 24 * 60 * 60).getTime()
           await auction.connect(bidder2).placeBid(auctionId, 200);
 
           // Assert that bidder1 was refunded their bid amount
-          expect(await stablecoin.balanceOf(bidder1.address)).to.equal(bidder1BalanceBefore);
+          expect(await mockStableCoin.balanceOf(bidder1.address)).to.equal(bidder1BalanceBefore);
         });
 
         it("should revert if the bid is not higher than the current highest bid", async function () {
-          // Approve the auction contract to transfer stablecoin on behalf of bidder1
-          await stablecoin.connect(bidder1).approve(auction.target, 100);
+          // Approve the auction contract to transfer mockStableCoin on behalf of bidder1
+          await mockStableCoin.connect(bidder1).approve(auction.target, 100);
 
           // Place a bid on the auction
           await auction.connect(bidder1).placeBid(auctionId, 100);
@@ -146,12 +146,12 @@ const FUTURE_DATE = Math.floor(new Date(Date.now() + 7 * 24 * 60 * 60).getTime()
         await ethers.provider.send("evm_setNextBlockTimestamp", [endTime+1000]);
       
           const tx = await auction.connect(seller)
-          .createAuction(stablecoin.target, startTime, endTime+1500, 10, 'ghggh', true, { gasLimit: 3e7 });
+          .createAuction(mockStableCoin.target, startTime, endTime+1500, 10, 'ghggh', true, { gasLimit: 3e7 });
             const receipt = await tx.wait();
             auctionId = await auction.auctionCount();
 
-          await stablecoin.connect(bidder1).approve(auction.target, 100);
-          await stablecoin.connect(bidder2).approve(auction.target, 200);
+          await mockStableCoin.connect(bidder1).approve(auction.target, 100);
+          await mockStableCoin.connect(bidder2).approve(auction.target, 200);
           // Place a bid on the auction
           await auction.connect(bidder1).placeBid(auctionId, 100, { gasLimit: 3e7 });
           // Place a higher bid on the auction
@@ -190,7 +190,7 @@ const FUTURE_DATE = Math.floor(new Date(Date.now() + 7 * 24 * 60 * 60).getTime()
           await auction.connect(seller).withdraw(auctionId);
 
           // Assert that the seller received the highest bid amount
-          expect(await stablecoin.balanceOf(seller.address)).to.equal(200);
+          expect(await mockStableCoin.balanceOf(seller.address)).to.equal(200);
         });
 
         it("should revert if there are no funds to withdraw", async function () {
@@ -210,7 +210,7 @@ const FUTURE_DATE = Math.floor(new Date(Date.now() + 7 * 24 * 60 * 60).getTime()
       const startTime = 0;
       const block = await ethers.provider.getBlock("latest"); 
       endtime = block!.timestamp + 60*60*24;
-      const tx = await auction.connect(seller).createAuction(stablecoin.target, startTime, endtime, 10, "ghh", true, { gasLimit: 3e7 });
+      const tx = await auction.connect(seller).createAuction(mockStableCoin.target, startTime, endtime, 10, "ghh", true, { gasLimit: 3e7 });
       const receipt = await tx.wait();
       auctionId = await auction.auctionCount()
       console.log('auctionId',auctionId)
@@ -221,8 +221,8 @@ const FUTURE_DATE = Math.floor(new Date(Date.now() + 7 * 24 * 60 * 60).getTime()
       // await ethers.provider.send("evm_setNextBlockTimestamp", [endtime-fiveminutes]);
       // console.log('aftereEvm', fiveminutes)
 
-      // Approve the auction contract to transfer stablecoin on behalf of bidder1
-      await stablecoin.connect(bidder2).approve(auction.target, 100);
+      // Approve the auction contract to transfer mockStableCoin on behalf of bidder1
+      await mockStableCoin.connect(bidder2).approve(auction.target, 100);
 
       const tx = await auction.connect(bidder2).placeBid(auctionId, 11, { gasLimit: 3e7 });
       console.log('aftereBid', tx)

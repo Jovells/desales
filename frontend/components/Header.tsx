@@ -14,7 +14,7 @@ export const Header = () => {
         <Link style={{ textDecoration: "none", color: "inherit" }} href="/">
           <Stack direction={"row"} alignContent={"center"} gap={1} alignItems={"center"}>
             <Image priority width={50} height={50} src={logo} alt="Follow us on Twitter" />
-            <Typography fontFamily={'Titillium Web'} fontWeight={'bold'} variant="h6">Dauctions</Typography>
+            <Typography fontFamily={'Titillium Web'} fontWeight={'bold'} variant="h6">Desales</Typography>
           </Stack>
         </Link>
         <ConnectButton />
