@@ -11,6 +11,8 @@ import MockStableCoinData from "../../artifacts/contracts/MockStableCoin.sol/Moc
 import { useAccount } from "wagmi";
 import toast from "react-hot-toast";
 import { useChainModal } from "@rainbow-me/rainbowkit";
+import LoadingComponent from "../components/LoadingComponent";
+
 
 
 interface ContractContext {
@@ -33,7 +35,7 @@ export function useContracts(): ContractContext{
   console.log('openChainModal', openChainModal)
 
   useEffect(() => {
-    const currentChainId = parseInt(window.ethereum.chainId);
+    const currentChainId = parseInt(window?.ethereum?.chainId);
     if(currentChainId !== chain.id && openChainModal){
       toast("please switch to Telos Network")
       openChainModal()
@@ -105,7 +107,7 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
   }, [account.address, currentChainId]);
 
   if (!contracts) {
-    return <div>Loading...</div>;
+    return <LoadingComponent/>;
   }
 
   return (

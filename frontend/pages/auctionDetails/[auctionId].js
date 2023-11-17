@@ -250,7 +250,7 @@ function AuctionDetails() {
             <Stack justifyContent={'space-between'} direction={'row'}>
               <Grid>
                 {auctionEnded ?
-                  <Chip sx={{ mb: 1, }} color="info" label="auctionEnded" />
+                  <Chip sx={{ mb: 1, }} color="info" label="Auction ended" />
                   :
                   <Typography variant="caption"  >Auction {auctionStarted ? 'ends' : 'starts'} in:</Typography>
                 }

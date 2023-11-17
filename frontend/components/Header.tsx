@@ -17,7 +17,7 @@ export const Header = () => {
             <Typography fontFamily={'Titillium Web'} fontWeight={'bold'} variant="h6">Desales</Typography>
           </Stack>
         </Link>
-        <ConnectButton />
+        <ConnectButton showBalance={false}/>
       </Stack>
       <Divider />
     </>

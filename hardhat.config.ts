@@ -1,7 +1,6 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import dotenv from 'dotenv'
-import "@nomicfoundation/hardhat-verify";
 import "hardhat-deploy";
 import "@nomiclabs/hardhat-ethers";
 dotenv.config();
@@ -20,9 +19,6 @@ const config: HardhatUserConfig = {
         chainId: 41,
       },
   },
-  sourcify: {
-    enabled: true,
-  }
 };
 
 export default config;
