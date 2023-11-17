@@ -115,9 +115,9 @@ const CreateAuction = () => {
       <TextField name="externalLink" label='External Link' sx={{ mb: 2, }} placeholder="A link to this URL will be included on this item's detail page, for users to learn more about it"></TextField>
       <TextField name="startTime" defaultValue={Date.now} InputLabelProps={{ shrink: true }} type="dateTime-local" sx={{ mb: 2, }} label='Start Time' placeholder="Select A time" fullWidth />
       <TextField name="endTime" InputLabelProps={{ shrink: true }} type="dateTime-local" sx={{ mb: 2, }} label='End Time' placeholder="Select A time" fullWidth />
-      <TextField name="currency" defaultValue={''} select label="Currency" sx={{ mb: 2, }} fullWidth>
+      <TextField name="currency" defaultValue={stablecoins[0].address} select label="Currency" sx={{ mb: 2, }} fullWidth>
         {stablecoins.map((coin) => (
-          <MenuItem key={coin.address} value={coin.address}>
+          <MenuItem key={coin.name} value={coin.address}>
             {coin.name}
           </MenuItem>
         ))}

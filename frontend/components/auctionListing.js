@@ -46,9 +46,9 @@ const AuctionListing = ({ first = true, auction = {name: 'Honda Civic', seller: 
       return data
     }
 
-    if (auction?.auctionid) getMetadata();
+    if (auction?.auctionId) getMetadata();
 
-  },[auction?.auctionid])
+  },[auction?.auctionId])
 
   const timeLeft = Time.getTimeDifferenceString(auction.endTime);
   
@@ -79,10 +79,10 @@ const AuctionListing = ({ first = true, auction = {name: 'Honda Civic', seller: 
 
     <Stack width={0.3}   direction={'row'} alignItems={'center'} >
     <ListItemAvatar>
-    <Avatar sx={{ bgcolor: 'black'}}>
+    <Avatar sx={{ bgcolor: newAuction.imageUrl? '': "black"}}>
         {newAuction.imageUrl 
-        ? <img src={newAuction.imageUrl} alt="auction image" /> 
-        : getInitials(newAuction.seller)}
+        ? <img height={"100%"}  src={newAuction.imageUrl} alt="auction image" /> 
+        : getInitials(newAuction.auctionId.toString())}
     </Avatar></ListItemAvatar>
 
     <Typography>{newAuction.auctionId}</Typography>

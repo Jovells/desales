@@ -58,10 +58,7 @@ function AuctionDetails() {
 
   useEffect(() => {
     async function getAuctionData() {
-      // convertToStruct takes an array type eg. Inventory.ItemStructOutput and converts it to an object type.
-
-
-      // This is to remove unnecessary properties from the output type. Use it eg. `ExtractPropsFromArray<Inventory.ItemStructOutput>`
+    try {
       const auctionDetailsFromContract = await Auction.getAuction(router.query.auctionId)
       const d = auctionDetailsFromContract;
       const tokenUriFromContract = await DesalesNFT.tokenURI(auctionDetailsFromContract?.tokenId)
@@ -77,13 +74,12 @@ function AuctionDetails() {
       auc = { ...metadata, ...auc, imageUrl }
       console.log(auc)
       setAuction(auc);
-      setBid(((auc.startPrice) * 10 ** -6 + 0.01).toFixed(2))
-    }
-    try {
-      getAuctionData()
+      setBid(((auc.startPrice) * 10 ** -6 + 1).toFixed(2))
     } catch (error) {
       console.log(error)
     }
+    }
+      getAuctionData()
 
 
   }, [router.query.auctionId, refresh]);
@@ -96,6 +92,13 @@ function AuctionDetails() {
     if (!account.isConnected) {
       return openConnectModal();
     }
+    if(mockStableCoinBalance < bid){
+      console.log('bid', bid, 'mockStableCoinBalance', mockStableCoinBalance)
+      return toast.error(
+        `Insufficient Balance
+        Click the Mint Button to get 1000 MockStablecoins`
+        );
+    }
     const parsedBid = BigInt(bid * 10 ** 6)
     const auctionId = BigInt(router.query.auctionId)
     let toastId;
@@ -104,11 +107,16 @@ function AuctionDetails() {
       return toast.error('Bid must be higher than highest bid');
     }
     const allowance = await auctionStableCoin.allowance(account.address, Auction.target)
+
     console.log('allowance', allowance)
     if (allowance < parsedBid) {
       toastId = toast.loading("Seeking Approval For token Transfer");
-      const approval = await auctionStableCoin.approve(Auction.target, parsedBid);
-      const txnReceipt = await approval.wait()
+      try {
+        const approval = await auctionStableCoin.approve(Auction.target, parsedBid);
+        const txnReceipt = await approval.wait()
+      } catch (err) {
+        toast.error("Something went wrong!", { id: toastId });
+      }
       toast.success("Approval Successful", { id: toastId });
     }
     try {
@@ -121,7 +129,7 @@ function AuctionDetails() {
       setRefresh(Date.now());
 
     } catch (error) {
-      toast.error(error.message, { id: toastId });
+      toast.error("Something went wrong!", { id: toastId });
       console.error(error)
     }
 
@@ -137,11 +145,11 @@ function AuctionDetails() {
       setRefresh(Date.now());
     } catch (error) {
       console.error(error);
-      toast.error(error.message);
+      toast.error("Something went wrong!", { id: toastId });
     }
   }
   async function handleClaim() {
-    const toastId = toast.loading("Withdrawing");
+    const toastId = toast.loading("Claiming NFT");
 
     console.log('claim');
     try {
@@ -151,7 +159,7 @@ function AuctionDetails() {
       setRefresh(Date.now());
     } catch (error) {
       console.error(error);
-      toast.error(error.message);
+      toast.error("Something went wrong!", { id: toastId });
     }
   }
 
@@ -161,6 +169,7 @@ function AuctionDetails() {
     try {
       await auctionStableCoin.mint();
       toast.success("Minted Successfully", { id: toastId });
+      setRefresh(Date.now());
     } catch (err) {
       console.log(err);
       toast.error(err, { id: toastId });

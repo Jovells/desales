@@ -91,7 +91,7 @@ export const stablecoins = [
   { name: 'USDC', address: MockStableCoinAddress },
   { name: 'USDT', address: MockStableCoinAddress },
   { name: 'DAI', address: MockStableCoinAddress },
-  { name: 'AUSDC', address: MockStableCoinAddress },
+  { name: 'MUSDC', address: MockStableCoinAddress },
 ];
 
 

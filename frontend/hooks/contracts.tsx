@@ -29,19 +29,6 @@ const ContractContext = createContext<ContractContext | null>(null);
 
 export function useContracts(): ContractContext{
   const contractContext = useContext(ContractContext);
-
-  if (!contractContext) {
-    throw new Error("Contract context is not available");
-  }
-
-
-  return contractContext;
-}
-
-export function ContractProvider({ children }: { children: React.ReactNode }) {
-
-  const [contracts, setContracts] = useState<ContractContext | null>(null);
-  const account = useAccount()
   const {openChainModal} = useChainModal()
   console.log('openChainModal', openChainModal)
 
@@ -55,20 +42,56 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
   
   
 
+  if (!contractContext) {
+    throw new Error("Contract context is not available");
+  }
+
+
+  return contractContext;
+}
+
+export function ContractProvider({ children }: { children: React.ReactNode }) {
+
+  const [contracts, setContracts] = useState<ContractContext | null>(null);
+  const account = useAccount()
+
+  let currentChainId : number
+  try{
+   currentChainId = parseInt(window.ethereum.chainId);
+  }catch(e){
+    console.log(e)
+  }
 
   useEffect(() => {
     if (typeof window == "undefined") {
       return;
     }
+    console.log(account)
 
+    
     async function fetchContracts() {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    console.log("provider", provider);
-    const signer = await provider.getSigner();
+      let provider
+      if(currentChainId !== chain.id){
+        provider = new ethers.JsonRpcProvider(chain.rpcUrls.default.http[0], chain.id);
+ 
+      }else{
+        provider = new ethers.BrowserProvider(window.ethereum);
+      }
 
-      const Auction = new ethers.Contract(AuctionAddress, AuctionData.abi, signer) as unknown as Auction ;
-      const DesalesNFT = new ethers.Contract(DesalesNFTAddress, DesalesNFTData.abi, signer)  as unknown as DesalesNFT ;
-      const MockStableCoin = new ethers.Contract(MockStableCoinAddress, MockStableCoinData.abi, signer)  as unknown as MockStableCoin;
+      let runner
+  
+      try {
+        const signer = await provider.getSigner();
+        runner = signer;
+      } catch (error) {
+        runner = provider
+      }
+      
+      console.log("runner", runner);
+
+      const Auction = new ethers.Contract(AuctionAddress, AuctionData.abi, runner) as unknown as Auction ;
+      const DesalesNFT = new ethers.Contract(DesalesNFTAddress, DesalesNFTData.abi, runner)  as unknown as DesalesNFT ;
+      const MockStableCoin = new ethers.Contract(MockStableCoinAddress, MockStableCoinData.abi, runner)  as unknown as MockStableCoin;
 
       setContracts({
         Auction,
@@ -79,7 +102,7 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
 
     fetchContracts();
     //@ts-ignore
-  }, []);
+  }, [account.address, currentChainId]);
 
   if (!contracts) {
     return <div>Loading...</div>;
