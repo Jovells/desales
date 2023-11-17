@@ -1,13 +1,33 @@
-# Sample Hardhat Project
+# Desales: Decentralized Auctions Marketplace
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+Desales is a decentralized auctions marketplace project built with Hardhat and Next.js.
 
-Try running some of the following tasks:
+## Overview
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+Desales aims to provide a decentralized platform for conducting auctions. Users can participate in auctions using blockchain technology, ensuring transparency and security.
+
+## Prerequisites
+
+Make sure you have the following prerequisites before getting started:
+- Node.js and npm installed
+- Obtain NFTStorage API key from [NFTStorage](https://nft.storage/)
+- Obtain Alchemy API key from [Alchemy](https://www.alchemy.com/)
+
+## Getting Started
+
+To set up the project locally, follow these steps:
+
+### Setting Up Hardhat
+
+```bash
+# Install dependencies
+npm install
+
+# Navigate to the /frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Other Next.js setup steps...
+
