@@ -82,31 +82,26 @@ To set up the project locally, follow these steps:
 npm install
 ```
 
-# Deploy the smart contract:
+**Deploy the smart contracts:**
 ```bash
 npx hardhat run scripts/deploy.js
 ```
 
-
 ### Setting Up Next.js
 
-# Navigate to the /frontend directory
+**Navigate to the /frontend directory**
 ```bash
 cd frontend
 ```
 
-# Install dependencies
+**Install dependencies**
 ```bash
 npm install
 ```
 
-### API Keys
-Obtain NFTStorage API key and Alchemy API key as described below.
-
-
 Running Tests
 
-# Run tests for contracts
+**Run tests for contracts**
 ```bash
 npx hardhat test
 ```
