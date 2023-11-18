@@ -6,6 +6,11 @@ Desales is a decentralized auctions marketplace project built with Hardhat and N
 
 Desales aims to provide a decentralized platform for conducting auctions. Users can participate in auctions using blockchain technology, ensuring transparency and security.
 
+**Contract addresses**
+Auction: 0x695C1De27A868d772263c605eD9d9Cc855511754
+DesalesNFT: 0x23DD585F4600cc26744CEE8A3F710cF3546a8967
+MockStableCoin: 0x9d9592dF49D8E36b001C0A1AD65EAAadcD0b58b7
+
 # Desales: Decentralized Auctions Marketplace
 
 Desales is a decentralized auctions marketplace where users can create, bid on, and participate in auctions for unique NFTs. The platform leverages blockchain technology, IPFS storage, and smart contracts to ensure transparency, security, and a seamless auction experience.
@@ -82,10 +87,6 @@ To set up the project locally, follow these steps:
 npm install
 ```
 
-**Deploy the smart contracts:**
-```bash
-npx hardhat run scripts/deploy.js
-```
 
 ### Setting Up Next.js
 

@@ -7,15 +7,9 @@ import { publicProvider } from 'wagmi/providers/public';
 
 
 
+ const productionChain = telosTestnet 
 
-/* @todo: define topos chains
-https://wagmi.sh/react/chains#build-your-own
- const topos...
- */
-
- const productionChain = telosTestnet /*todo: use topos */
-
- const envChains = process.env.NODE_ENV === "production" ? [productionChain] : [hardhat, productionChain, /*todo: add topos */]
+ const envChains = process.env.NODE_ENV === "production" ? [productionChain] : [hardhat, productionChain]
 
  const { chains, publicClient } = configureChains(
   envChains,
